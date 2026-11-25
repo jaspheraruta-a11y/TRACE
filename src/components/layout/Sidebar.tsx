@@ -176,7 +176,7 @@ export function Sidebar({
                 Internal use only
               </span>
               <span className="block text-[10px] text-slate-500">
-                Phase 1 foundation · v0.1.0
+                Archive system · v1.0.0
               </span>
             </span>
           </button>
@@ -188,7 +188,7 @@ export function Sidebar({
           >
             <ShieldCheck className="size-4 shrink-0" aria-hidden="true" />
             <span>
-              Internal use only · Phase 1 foundation · v0.1.0
+              Internal use only · Archive system · v1.0.0
             </span>
           </div>
         </div>

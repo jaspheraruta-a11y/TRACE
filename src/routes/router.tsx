@@ -6,10 +6,16 @@ import { SettingsPage } from '@/pages/admin/SettingsPage'
 import { UsersPage } from '@/pages/admin/UsersPage'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { DashboardPage } from '@/pages/dashboard/DashboardPage'
+import { DocumentsPage } from '@/pages/documents/DocumentsPage'
 import { ForbiddenPage } from '@/pages/errors/ForbiddenPage'
 import { NotFoundPage } from '@/pages/errors/NotFoundPage'
 import { RouteErrorPage } from '@/pages/errors/RouteErrorPage'
-import { ModuleStatusPage } from '@/pages/modules/ModuleStatusPage'
+import { InventoryPage } from '@/pages/inventory/InventoryPage'
+import { ReportsPage } from '@/pages/reports/ReportsPage'
+import { RequestsPage } from '@/pages/requests/RequestsPage'
+import { SearchPage } from '@/pages/search/SearchPage'
+import { StudentDetailPage } from '@/pages/students/StudentDetailPage'
+import { StudentsPage } from '@/pages/students/StudentsPage'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 import { RequireRole } from '@/routes/RequireRole'
 
@@ -32,24 +38,13 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <Navigate to="/dashboard" replace /> },
           { path: 'dashboard', element: <DashboardPage /> },
-          {
-            path: 'students',
-            element: <ModuleStatusPage moduleId="students" />,
-          },
-          { path: 'search', element: <ModuleStatusPage moduleId="search" /> },
-          {
-            path: 'documents',
-            element: <ModuleStatusPage moduleId="documents" />,
-          },
-          {
-            path: 'inventory',
-            element: <ModuleStatusPage moduleId="inventory" />,
-          },
-          {
-            path: 'requests',
-            element: <ModuleStatusPage moduleId="requests" />,
-          },
-          { path: 'reports', element: <ModuleStatusPage moduleId="reports" /> },
+          { path: 'students', element: <StudentsPage /> },
+          { path: 'students/:id', element: <StudentDetailPage /> },
+          { path: 'search', element: <SearchPage /> },
+          { path: 'documents', element: <DocumentsPage /> },
+          { path: 'inventory', element: <InventoryPage /> },
+          { path: 'requests', element: <RequestsPage /> },
+          { path: 'reports', element: <ReportsPage /> },
           { path: 'account', element: <AccountPage /> },
           {
             path: 'admin',

@@ -2,10 +2,10 @@
 
 **Transcript and Record Archival and Cataloguing Engine**
 
-An internal archival and retrieval system for the Junior High School
-Registrar's Office. TRACE is built to digitize, organize, search, preserve, and
-retrieve historical student records — including incomplete records from the
-1980s and 1990s — while keeping the path back to every physical original.
+An internal archival and retrieval system for the Junior High School Registrar's
+Office. TRACE digitizes, organizes, searches, preserves, and retrieves
+historical student records — including incomplete records from the 1980s and
+1990s — while keeping the path back to every physical original.
 
 > TRACE is **not** a general school management system, a public alumni portal,
 > or a public student database. It is an authenticated, role-controlled tool
@@ -13,52 +13,67 @@ retrieve historical student records — including incomplete records from the
 
 ---
 
-## Current status — Phase 1 complete
+## Status — v1.0.0 / Phase 12 code complete
 
-Phase 1 establishes the secure foundation only. Later phases add the archive
-modules in order.
+All twelve phases are implemented in the application and in SQL migrations.
+`npm run build` passes and `npm run lint` reports advisory warnings only.
 
-| Phase | Module | Status |
+**Deployment is not yet live-verified.** No Supabase credentials, `.env.local`,
+or Supabase CLI access were available in this workspace, so the migrations have
+not been applied to a live project and the RLS/Storage/RPC checks in section 7
+still need to be run before real student data is stored.
+
+| Phase | Delivered capability | Code status |
 | --- | --- | --- |
-| 1 | Foundation, shell, auth boundary, initial migration | **Complete** |
-| 2 | Full account provisioning and role management | Planned |
-| 3 | Student Archive (Module B) | Planned |
-| 4 | Historical personal information | Planned |
-| 5 | High School Record / Prospectus | Planned |
-| 6 | Smart Search (Module D) | Planned |
-| 7 | Document Digitization (Module F) | Planned |
-| 8 | Physical Archive Locator & Inventory (G / I) | Planned |
-| 9 | Retrieval Requests (Module H) | Planned |
-| 10 | Reports (Module L) | Planned |
-| 11 | Audit expansion and security testing | Planned |
-| 12 | Finalization and deployment documentation | Planned |
+| 1 | Foundation, application shell, auth boundary, audit writer | Complete |
+| 2 | Staff provisioning and role management | Complete |
+| 3 / 4 | Student archive and historical personal information | Complete |
+| 5 | High school record / prospectus | Complete |
+| 6 | Smart Search | Complete |
+| 7 | Document digitization and private storage | Complete |
+| 8 | Physical locator and inventory | Complete |
+| 9 | Retrieval requests | Complete |
+| 10 | Reports and CSV exports | Complete |
+| 11 | Audit hardening | Complete |
+| 12 | Finalization and schema version `1.0.0` | Complete |
 
-### What is functional in Phase 1
+“Complete” here means the code and migration are written and pass local static
+checks. It does **not** mean a live Supabase project has been verified.
 
-- Real Supabase Authentication with email and password.
-- Session restoration and sign-out.
-- Protected routes and an explicit blocked-access screen for unprovisioned or
-  inactive accounts.
-- Role-aware navigation for Administrator, Registrar, and Digitization Staff.
-- Administrator-only staff directory and audit viewer backed by RLS.
-- Real dashboard readiness checks (environment, profile, schema) — no
-  fabricated statistics.
-- Sign-in events written to the audit log by a security-definer function.
-- Private, unauthenticated access refused at the route boundary.
-- Responsive application shell with collapsible sidebar, mobile drawer,
-  account menu, and a keyboard command palette (`Ctrl/Cmd + K`).
-- Phase 1 database migration and seed file.
+### What is functional now
 
-### What is intentionally not present yet
+- Supabase email/password authentication, session restore, sign-out, protected
+  routes, and an access-blocked screen for unprovisioned or inactive accounts.
+- Role-aware navigation for Administrator, Registrar, and Digitization Staff;
+  PostgreSQL RLS remains the authorization authority.
+- Administrator-only staff creation, activation, suspension, and role changes
+  through server-side RPCs with self-change and last-administrator guards.
+- Student masterlist with filtered/paginated browsing, duplicate detection,
+  CSV import, archive/restore, and a full record view.
+- High school year entries with free-text year levels, subjects, C.S. averages,
+  action-taken values, credits, attendance, and remarks.
+- Ranked Smart Search using full-text search and trigram similarity across
+  names, archive IDs, guardians, schools, subjects, and locators.
+- Private document uploads (PDF/JPEG/PNG, 25 MB), verification/rejection,
+  short-lived signed URLs, and an audit event on every document access.
+- Structured storage locations with unique locator codes, student assignment,
+  digitization status, printable labels, and QR codes.
+- Retrieval request intake, assignment, requester verification, workflow RPCs,
+  release guard, and append-only event history.
+- Live reports, coverage/gap reporting, and role-scoped CSV exports.
+- Append-only audit trail with administrator-only reads and triggers covering
+  students, academic history, documents, locations, and requests.
+- Responsive shell with collapsible sidebar, mobile drawer, account menu, and
+  keyboard command palette (`Ctrl/Cmd + K`).
 
-- Student records, academic history, documents, inventory, locators, and
-  retrieval requests.
-- Public sign-up, alumni portal, or public search.
-- Sample or fabricated production records.
-- Any archive statistics that are not derived from real database rows.
+### Deliberately not included
 
-Planned modules display an honest module-status page with no inactive buttons
-and no placeholder data.
+- Public sign-up, public alumni portal, or public student search.
+- Mock records, placeholder buttons, or fabricated dashboard/report figures.
+- Any browser code containing the Supabase service-role key.
+- Direct client writes to `retrieval_requests`, `request_events`, or
+  `audit_logs`; all workflow and audit writes go through controlled functions.
+- Permanent deletion of student records. Records are archived and restored.
 
 ---
 
@@ -67,89 +82,81 @@ and no placeholder data.
 | Layer | Choice |
 | --- | --- |
 | UI | React 19, TypeScript, Vite, Tailwind CSS v4 |
-| Routing | React Router v7 (data router) |
-| Backend | Supabase (PostgreSQL, Auth, Storage, RLS) |
+| Routing | React Router v7 data router |
+| Backend | Supabase — PostgreSQL, Auth, Storage, RLS, RPCs |
 | Forms & validation | React Hook Form + Zod |
 | Icons / toasts | Lucide React / Sonner |
-| Data helpers | TanStack Table (installed for later archive tables), date-fns |
-| Future modules | QR code generation (`qrcode.react`), PDF viewing added in Phase 7 |
+| Data helpers | date-fns; TanStack Table is installed but current tables render directly |
+| Labels | `qrcode.react` for printable locator labels |
+| Audit metadata | Typed JSON with human-readable action labels |
 
-No `localStorage` database is used. Supabase is the persistence layer.
-`localStorage` stores only the Supabase session token (managed by the SDK) and
-the sidebar collapse preference.
+Supabase is the only persistence layer. `localStorage` is used only for the
+SDK session and the sidebar collapse preference — never as a database.
 
 ---
 
 ## Architecture
 
-```
+```text
 src/
   components/
-    auth/           Access-blocked screen for unprovisioned/inactive accounts
+    archive/        StudentPicker, DocumentTable, StatusBadges, dialogs
+    auth/           Access-blocked screen
     layout/         App shell, sidebar, top bar, command palette
-    ui/             Reusable design-system primitives
+    ui/             Buttons, cards, dialogs, forms, feedback primitives
   context/          AuthProvider (session + profile + role)
-  hooks/            Document title
+  hooks/            useDocumentTitle, useAsyncData
   lib/
-    supabase/       Client, hand-written Database types
+    archive/        Supabase query/RPC wrappers, CSV helpers, labels
+    supabase/       Client and hand-written Database types
     audit.ts        Human-readable audit action labels
-    modules.ts      Module catalogue and phase metadata
+    modules.ts      Module catalogue
     navigation.ts   Role-aware navigation configuration
-    roles.ts        Role labels, descriptions, and access scopes
+    roles.ts        Role labels, descriptions, and scopes
     utils.ts        Formatting and class helpers
   pages/
-    account/        Real staff profile and session details
+    account/        Staff profile and session details
     admin/          Staff directory, audit trail, system settings
     auth/           Login
-    dashboard/      Readiness dashboard using real data
+    dashboard/      Live archive dashboard
+    documents/      Private document register and upload
     errors/         403, 404, route error boundary
-    modules/        Honest status pages for planned modules
+    inventory/      Locator register, assignment, labels
+    reports/        Live aggregates, gaps, CSV exports
+    requests/       Request register and detail workflow
+    search/         Ranked Smart Search
+    students/       Masterlist, form, import, full record view
   routes/           ProtectedRoute, RequireRole, router
 supabase/
-  migrations/       Phase 1 foundation SQL
+  migrations/       Twelve phase migrations, applied in filename order
+  fixes/            One-time repair scripts for live projects
   seed.sql          Non-secret system settings only
 ```
 
-**Boundaries**
+**Security boundaries**
 
-- UI components never talk to the database directly for authorization.
-- `AuthContext` resolves the session and the staff profile from Supabase.
-- Role checks in the UI hide navigation; PostgreSQL RLS is the authority.
-- Audit writes are performed by security-definer functions, not client inserts.
-- The Supabase service-role key is never referenced in this codebase.
+- UI role checks hide navigation; PostgreSQL RLS is the authority.
+- `AuthContext` resolves the session and active staff profile from Supabase.
+- Privileged database functions are `SECURITY DEFINER` with pinned
+  `search_path = ''` and explicit active-staff/admin guards.
+- Audit rows are written by triggers or controlled functions, never by client
+  `INSERT`/`UPDATE`/`DELETE`.
+- Storage objects live in a private bucket and are opened only through
+  short-lived signed URLs issued to authorized staff.
+- No service-role or secret key is referenced anywhere in the frontend.
 
 ---
 
 ## Prerequisites
 
 - Node.js 22+ and npm 10+
-- A Supabase project (free tier is sufficient for development)
-- Supabase CLI (optional, for migrations)
+- A Supabase project
+- Supabase CLI only if you prefer CLI migration application
+- An administrator email ready for bootstrap
 
 ---
 
-## 1. Create the frontend (already done)
-
-These are the exact commands used to create this repository:
-
-```bash
-npm create vite@latest . -- --template react-ts
-npm install
-npm install react-router-dom @supabase/supabase-js react-hook-form zod \
-  @hookform/resolvers lucide-react sonner @tanstack/react-table clsx \
-  tailwind-merge qrcode.react date-fns @fontsource-variable/inter
-npm install -D tailwindcss @tailwindcss/vite
-```
-
-The Vite React TypeScript template provides the base configuration. Tailwind
-v4 is wired through `@tailwindcss/vite` in `vite.config.ts`; the design tokens
-live in `src/index.css`.
-
----
-
-## 2. Configure the environment
-
-Copy the template:
+## 1. Configure the environment
 
 ```bash
 cp .env.example .env.local        # macOS / Linux / Git Bash
@@ -165,53 +172,78 @@ VITE_SUPABASE_ANON_KEY=YOUR_PUBLISHABLE_ANON_KEY
 
 Rules:
 
-- Only the **anon / publishable** key belongs in a Vite app.
-- Never put the **service-role** key in any `VITE_*` variable.
+- Only the anon/publishable key belongs in a Vite app.
+- Never put the service-role key in a `VITE_*` variable.
 - Never commit `.env.local`.
 - Restart the dev server after changing environment variables.
 
-The app validates the configuration at startup. If it is missing, the login
-screen explains what to fix instead of attempting a fake session.
+The login page reports missing configuration instead of attempting a fake
+session.
 
 ---
 
-## 3. Apply the database migration
+## 2. Apply the database migrations
 
-### Option A — Supabase SQL editor (quickest)
+Apply files in **filename/timestamp order**. The Phase 6 search migration is
+named after Phase 7 because it depends on the student, academic, and document
+tables, so follow the filenames rather than the phase numbers.
 
-1. Open **SQL Editor** in the Supabase dashboard.
-2. Run the complete contents of
-   `supabase/migrations/20261124090000_phase1_foundation.sql`.
-3. Run the complete contents of `supabase/seed.sql`.
-4. Confirm `schema_version` appears under **Table Editor → system_settings**.
+| Order | File | Purpose |
+| --- | --- | --- |
+| 1 | `20261124090000_phase1_foundation.sql` | Profiles, settings, audit writer, helpers, RLS |
+| 2 | `seed.sql` | Non-secret defaults; safe to re-run |
+| 3 | `20261125120000_phase2_account_management.sql` | Staff RPCs and profile hardening |
+| 4 | `20261126090000_phase3_student_archive.sql` | Students, archive IDs, Phases 3/4 fields |
+| 5 | `20261126100000_phase5_academic_history.sql` | School years and subjects |
+| 6 | `20261126110000_phase7_documents.sql` | Document metadata and private bucket |
+| 7 | `20261126120000_phase6_smart_search.sql` | Search vector, indexes, ranked RPC |
+| 8 | `20261126130000_phase8_inventory_locator.sql` | Locations, assignment, locator summary |
+| 9 | `20261126140000_phase9_retrieval_requests.sql` | Requests, events, workflow RPCs |
+| 10 | `20261126150000_phase10_reports.sql` | Aggregates and export RPCs |
+| 11 | `20261126160000_phase11_audit_hardening.sql` | Entity index and read-only audit posture |
+| 12 | `20261126170000_phase12_finalize.sql` | Object verification and final version marker |
 
-### Option B — Supabase CLI
+`seed.sql` inserts `schema_version` with `ON CONFLICT DO NOTHING`, so re-running
+it cannot roll a fully migrated database back. Phase 2 is also safe to re-run:
+it replaces the staff-provisioning RPCs without downgrading a later
+`schema_version`. Phase 12 finishes with `{"version":"1.0.0","phase":12}` and
+fails if any required table or function is missing.
+
+### Supabase SQL editor
+
+1. Run each file above in order in **SQL Editor**.
+2. Confirm `schema_version` under **Table Editor → system_settings** reads
+   `{"version":"1.0.0","phase":12}`.
+3. Confirm the `student-documents` bucket exists and is private.
+
+### Supabase CLI
 
 ```bash
-npx supabase init                       # first time only: creates supabase/config.toml
+npx supabase init                       # first time only
 npx supabase login
 npx supabase link --project-ref YOUR_PROJECT_REF
 npx supabase db push
 ```
 
-For a local Supabase stack (requires Docker):
+For a local stack (requires Docker):
 
 ```bash
 npx supabase start
 npx supabase db reset   # applies migrations and supabase/seed.sql
 ```
 
-The migration is written to be safe to re-run: enums, tables, indexes,
-triggers, policies, and functions are created idempotently.
+`db push` applies migrations to the linked project but does not run the seed
+file there; run `seed.sql` once in the SQL editor if you use the CLI for a
+remote project. The SQL files are written to be safe to re-run.
 
 ---
 
-## 4. Create the first administrator
+## 3. Bootstrap the first administrator
 
 There is no public sign-up and no client-side role assignment.
 
-1. In **Supabase → Authentication → Users**, create a user with a real email and
-   a strong password. Confirm the email if confirmation is enabled.
+1. In **Supabase → Authentication → Users**, create a user with a real email
+   and strong password. Confirm the email if confirmation is enabled.
 2. Run this in the SQL editor, replacing the email and name:
 
 ```sql
@@ -231,23 +263,115 @@ set role = 'administrator',
 ```
 
 3. Sign in to TRACE with that account.
+4. In **Supabase → Authentication → Providers → Email**, disable **Allow new
+   users to sign up**. Public sign-up must remain off.
 
-To provision another staff member, create the auth user first, then insert a
-profile with one of:
+### Ongoing staff management
 
-- `registrar`
-- `digitization_staff`
-- `administrator`
+Use **Administration → Staff Accounts**:
 
-Set `is_active = true` only after the account has been approved.
+1. Choose **Add staff** and enter name, email, role, and a temporary password.
+2. Share the temporary password securely and confirm the staff member's identity.
+3. Choose **Activate** to grant access.
+4. Use **Role** to reassign `administrator`, `registrar`, or
+   `digitization_staff`; use **Suspend** to revoke access without deleting data.
 
-**Least privilege:** a new profile defaults to `digitization_staff` and
-`is_active = false`. Inactive profiles can authenticate but cannot enter the
-application; they see the access-blocked screen.
+New accounts are created inactive with the least-privilege role. Administrators
+cannot change their own role or status, and TRACE refuses to suspend or
+downgrade its last active administrator. Every change is audited.
+
+### If a non-administrator cannot sign in
+
+TRACE roles are stored **only** in `public.profiles.role`. Never set
+`auth.users.role` or `auth.users.aud` to `administrator`, `registrar`, or
+`digitization_staff`. Supabase Auth requires both values to stay
+`authenticated`.
+
+Password sign-in also depends on standard Supabase Auth structure that an
+account created directly in **Supabase → Authentication → Users** receives
+automatically:
+
+- `auth.users.instance_id = '00000000-0000-0000-0000-000000000000'`
+- `auth.users.aud = 'authenticated'` and `auth.users.role = 'authenticated'`
+- `auth.users.is_sso_user = false`
+- token columns such as `confirmation_token` are `''`, not `NULL`
+- an `auth.identities` row with `provider = 'email'`
+
+Earlier TRACE provisioning wrote the password hash but omitted the nil
+`instance_id` and email identity, so GoTrue returned
+`Invalid login credentials` even though the bcrypt hash was valid.
+
+Check the affected account in **SQL Editor**:
+
+```sql
+select
+  u.email,
+  u.instance_id = '00000000-0000-0000-0000-000000000000'::uuid as instance_ok,
+  u.aud,
+  u.role as auth_role,
+  u.email_confirmed_at is not null as email_confirmed,
+  (
+    u.confirmation_token is null
+    or u.email_change is null
+    or u.email_change_token_new is null
+    or u.recovery_token is null
+  ) as null_tokens,
+  count(i.id) filter (where i.provider = 'email') as email_identities,
+  p.role as trace_role,
+  p.is_active
+from auth.users u
+left join public.profiles p on p.id = u.id
+left join auth.identities i on i.user_id = u.id
+where lower(u.email) = lower('registrar@school.edu.ph')
+group by u.id, p.id;
+```
+
+Expected result: `instance_ok = true`, `aud = authenticated`,
+`auth_role = authenticated`, `email_confirmed = true`, `null_tokens = false`,
+`email_identities >= 1`, `trace_role = registrar` (or `digitization_staff`),
+and `is_active = true`.
+
+Apply the fix in this order:
+
+1. Re-run the corrected `20261125120000_phase2_account_management.sql` in
+   **SQL Editor**. This replaces `public.create_staff_account` so every new
+   staff account receives the required Auth structure. It is safe to re-run
+   and will not downgrade `schema_version` from Phase 12.
+2. Run `supabase/fixes/20261126180000_repair_staff_auth_roles.sql`. It repairs
+   every existing TRACE-linked account and installs the administrator-only RPC
+   used by **Fix login** in **Staff Accounts**. It is safe to re-run.
+3. To repair just one affected account from SQL Editor after step 1 or 2:
+
+   ```sql
+   do $$
+   declare
+     v_id uuid;
+     v_email text := lower('registrar@school.edu.ph');
+   begin
+     select id into v_id
+     from auth.users
+     where lower(email) = v_email;
+
+     if v_id is null then
+       raise exception 'No auth user found for %', v_email;
+     end if;
+
+     perform private.normalize_staff_auth_user(v_id, v_email);
+     perform private.ensure_staff_email_identity(v_id, v_email);
+   end
+   $$;
+   ```
+
+4. Confirm the account is active in **Staff Accounts** and activate it there
+   if needed. Then retry sign-in.
+
+Use **Add staff** for new accounts rather than creating them manually in
+Supabase Authentication, so the profile is linked and starts inactive as
+required.
 
 ---
 
-## 5. Run the application
+## 4. Run the application
 
 ```bash
 npm install
@@ -256,11 +380,11 @@ npm run dev
 
 Open the URL printed by Vite (default `http://localhost:5173`).
 
-Production build:
-
 ```bash
-npm run build
-npm run preview
+npm run build     # typecheck + production build
+npm run typecheck # typecheck only
+npm run lint      # oxlint
+npm run preview   # preview production assets
 ```
 
 Static hosts must rewrite unknown paths to `index.html` because TRACE uses the
@@ -268,13 +392,49 @@ HTML5 history API (`/students`, `/admin/audit`, etc.).
 
 ---
 
-## 6. Verify security before trusting the deployment
+## 5. Modules
 
-Phase 1 policies are **authored and included in the migration**, but they have
-not been verified against your live Supabase project. Run these checks before
-using real student data.
+| Area | Route | What it does |
+| --- | --- | --- |
+| Dashboard | `/dashboard` | Live counts, coverage, attention gaps, quick actions, role scope, recent admin activity |
+| Student Archive | `/students`, `/students/:id` | Masterlist, optional historical fields, duplicate detection, CSV import, archive/restore, academic history, documents, locator |
+| Smart Search | `/search` | Ranked fuzzy/full-text search with school year, school, year level, subject, and locator filters |
+| Digital Documents | `/documents` | Private register, upload, verify/reject, short-lived signed access |
+| Inventory | `/inventory` | Locator register, student assignment, digitization status, printable QR labels |
+| Retrieval Requests | `/requests` | Intake, assignment, verification, workflow, release guard, event history |
+| Reports | `/reports` | Live aggregates, coverage, gap report, CSV exports |
+| Audit Trail | `/admin/audit` | Administrator-only, append-only activity log |
+| Staff Accounts | `/admin/users` | Administrator-only account provisioning and roles |
+| Settings | `/admin/settings` | Real environment/schema visibility and deployment checklist |
 
-### Policy inventory
+Historical year-level and action-taken values are free text. Missing details stay
+blank; no value is invented to complete an old record.
+
+---
+
+## 6. Private document storage
+
+- Bucket: `student-documents`, `public = false`.
+- Limit: 25 MB; allowed MIME types: `application/pdf`, `image/jpeg`,
+  `image/png`.
+- Object paths begin with the owning student's UUID. Storage RLS checks the
+  folder, active staff status, and student existence.
+- The browser never receives a public object URL. Opening a document calls
+  `public.log_document_access(uuid)`, which verifies access and writes a
+  `document.view` audit event before issuing a short-lived signed URL.
+- Verification and rejection are restricted to Registrar/Administrator staff by
+  a database trigger. Deletion is restricted to Registrar/Administrator.
+- QR codes identify locators only; scanning a label does not bypass Supabase
+  authentication or RLS.
+
+---
+
+## 7. Security verification checklist — required before real data
+
+The policies are authored in the migrations but have not been verified against
+the live project. Run these checks after applying all migrations.
+
+### Policy and grant inventory
 
 ```sql
 select tablename, policyname, cmd, roles
@@ -282,113 +442,143 @@ from pg_policies
 where schemaname = 'public'
 order by tablename, policyname;
 
-select grantee, table_name, privilege_type
+select table_name, grantee, string_agg(privilege_type, ', ' order by privilege_type) as privileges
 from information_schema.role_table_grants
 where table_schema = 'public'
-  and table_name in ('profiles', 'system_settings', 'audit_logs')
-order by table_name, grantee, privilege_type;
+  and table_name in (
+    'profiles', 'system_settings', 'audit_logs', 'students',
+    'student_school_years', 'student_subjects', 'documents',
+    'archive_locations', 'retrieval_requests', 'request_events'
+  )
+group by table_name, grantee
+order by table_name, grantee;
+
+select id, name, public, file_size_limit, allowed_mime_types
+from storage.buckets
+where id = 'student-documents';
+
+select policyname, cmd, roles
+from pg_policies
+where schemaname = 'storage'
+  and tablename = 'objects'
+  and policyname like 'trace_documents_%'
+order by policyname;
 ```
 
-Expected Phase 1 posture:
+Expected posture:
 
-- `profiles`: SELECT for authenticated only; own row or administrator.
-- `system_settings`: SELECT for active staff only.
-- `audit_logs`: SELECT for active administrators only.
-- No client INSERT/UPDATE/DELETE grants or policies on these tables.
-- No anon access to any of them.
-- `record_audit_event` executable only by trusted database functions.
-- `record_sign_in` executable by authenticated users; actor and action fixed.
+- No `anon` grants on any archive table or storage object.
+- `profiles`: own row or administrator; no client role/status writes.
+- `system_settings`: active staff reads; writes are SQL/administrative.
+- `audit_logs`: administrator SELECT only; no client writes.
+- `students`: active staff SELECT/INSERT/UPDATE; no DELETE policy.
+- `student_school_years`, `student_subjects`, `documents`,
+  `archive_locations`: active staff reads/writes; location DELETE is
+  administrator-only; document DELETE is Registrar/Administrator.
+- `retrieval_requests` and `request_events`: active staff SELECT only. All
+  writes go through `create_retrieval_request`, `update_retrieval_request`,
+  `set_request_status`, and `set_request_verification`.
+- `set_request_status` blocks `released`/`completed` unless the requester is
+  verified and the actor is a Registrar or Administrator.
+- `search_students`, `find_student_duplicates`, and the report/export RPCs
+  require active staff status.
+- `record_audit_event` is not directly executable by browsers.
+- Privileged functions use `security definer` with `set search_path = ''`.
+- The storage bucket is private with the four `trace_documents_*` policies and
+  the student UUID path check.
 
-### Manual checks with a non-admin test account
+### Manual checks with test accounts
 
-1. Sign in as a Digitization Staff account. Confirm the sidebar hides
-   **Staff Accounts**, **Audit Trail**, and **System Settings**.
-2. Open `/admin/users` directly. Confirm the 403 page appears.
-3. Open `/admin/audit` directly. Confirm the 403 page appears.
-4. Query `audit_logs` from the browser console with the anon key. Confirm zero
-   rows / permission denied.
-5. Attempt to update your own `profiles.role` to `administrator`. Confirm the
-   request is denied.
-6. Attempt to insert an `audit_logs` row directly. Confirm the request is
-   denied.
-7. Sign in as an administrator. Confirm the staff directory and audit trail
-   show real data, and that a sign-in event appears.
-8. Set a test profile to `is_active = false`, then sign in. Confirm the
-   access-blocked screen appears and archival routes remain inaccessible.
+1. Sign in as Digitization Staff. Confirm Staff Accounts, Audit Trail, and
+   System Settings are hidden, and direct `/admin/users` and `/admin/audit`
+   URLs show the 403 page.
+2. Query `audit_logs`, `students`, and `storage.objects` with the anon key.
+   Confirm no rows are returned.
+3. Try to update your own `profiles.role` or `profiles.is_active` from the
+   browser console. Confirm the request is denied.
+4. Try to insert or delete an `audit_logs` row. Confirm the request is denied.
+5. Try to delete a student. Confirm no client DELETE path exists.
+6. Try to delete an archive location as non-admin. Confirm the request is denied.
+7. Try to update a document's verification status as non-Registrar/non-admin.
+   Confirm the trigger denies it.
+8. Open a document as active staff. Confirm a `document.view` audit entry is
+   written and the signed URL expires quickly.
+9. Try to construct a direct public storage URL for a document. Confirm access
+   is denied.
+10. Create a retrieval request and attempt to set it to `released` without
+    verification. Confirm the RPC rejects it.
+11. Verify as Registrar/Administrator, then release. Confirm both the request
+    event and audit trail show the action.
+12. Try calling `set_staff_active` or `set_staff_role` from a non-admin session.
+    Confirm the RPC denies it.
+13. Confirm an administrator cannot change their own role/status or suspend the
+    last active administrator.
+14. Set a test profile inactive, sign in, and confirm the access-blocked screen
+    with no archival routes available.
 
-If any check fails, stop and correct the policies before encoding records.
+If any check fails, stop and correct the database policy before encoding
+records.
 
 ---
 
-## Data privacy rules
+## 8. Data handling rules
 
 - Treat every historical record as confidential personal information.
-- Scanned documents will use a **private** Supabase Storage bucket and
-  short-expiry signed URLs (Phase 7). No public URLs.
+- Preserve incomplete historical data. Do not fill missing fields with guesses.
+- Keep year-level and action-taken wording as written in the original record.
+- Archive instead of deleting students; document deletion is narrowly allowed
+  and audited.
 - Do not put student names, grades, or document contents into audit metadata.
-- Do not use real records in development. Use fictional fixtures only.
-- No public search page, public QR payload, or unauthenticated document route
-  may be introduced.
-- QR codes (Phase 8) will identify a locator or internal record; scanning must
-  still require authentication and authorization.
+- Do not seed real records. `seed.sql` contains only non-secret settings.
 - Keep the service-role key server-side only.
+- Do not introduce public search, public document routes, or unverified QR
+  access.
 
 ---
 
-## Available scripts
+## 9. Known limitations
 
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Start the Vite development server |
-| `npm run build` | Type-check with `tsc -b` and build production assets |
-| `npm run typecheck` | Type-check only (`tsc -b`) |
-| `npm run preview` | Preview the production build locally |
-| `npm run lint` | Run oxlint (currently reports advisory warnings only) |
+- **Live verification is outstanding.** Migrations are not applied and RLS,
+  Storage, and RPC behavior are untested against a live Supabase project.
+- **`.env.local` is not present** in this workspace; create it from
+  `.env.example` before running the app.
+- **Public sign-up still needs to be disabled** in the Supabase dashboard.
+- **Password reset has no in-app flow.** Administrators create temporary
+  passwords; resets use the Supabase dashboard or a future self-service flow.
+- **The production bundle is one ~1.02 MB chunk (~284 kB gzipped).** Route-level
+  code splitting is a future optimization.
+- **`npm run lint` reports advisory warnings** for the fetch-on-mount pattern
+  and hook dependencies; there are no lint errors.
+- The gap table shows the first 500 rows for readability; CSV exports use the
+  full RPC result.
+- No offline mode is provided; the archive requires Supabase access.
 
 ---
 
-## Deployment notes
+## 10. Acceptance checklist
 
-1. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in the hosting
-   provider's environment settings.
-2. Configure SPA rewrites to `index.html`.
-3. Apply the migration and seed to the production Supabase project **before**
+- [x] All twelve phase implementations and migrations are written.
+- [x] React + TypeScript + Vite production build passes.
+- [x] Lint passes with advisory warnings only.
+- [x] No mock records, placeholder actions, or fabricated statistics.
+- [x] Private document bucket, signed access, and access audit events authored.
+- [x] Workflow status/verification writes restricted to RPCs.
+- [x] Final schema marker is `{"version":"1.0.0","phase":12}`.
+- [ ] Supabase migrations applied in the documented order.
+- [ ] `.env.local` created with real public Supabase values.
+- [ ] Public sign-up disabled.
+- [ ] First administrator provisioned.
+- [ ] Section 7 live security checks passed.
+
+---
+
+## 11. Deployment notes
+
+1. Apply all migrations and the seed to the production Supabase project before
    deploying the frontend.
-4. Provision the first administrator.
-5. Run the security checklist above with a non-admin account.
-6. Confirm Supabase backups are enabled and document the restore procedure.
-7. Do not enable real student scans until Phase 7 storage policies are tested.
-
----
-
-## Known Phase 1 limitations
-
-- **RLS is unverified against a live project.** The migration defines the
-  policies, but section 6 must be executed before real student data is stored.
-- **Account provisioning is SQL-only.** Creating staff, resetting passwords, and
-  editing roles in the interface arrive in Phase 2.
-- **The production bundle is a single ~850 kB chunk (~245 kB gzipped).** Route
-  level code splitting is worthwhile once the archive modules are added.
-- **No offline or print output yet.** Reports and printable locator labels are
-  later phases.
-- `npm run lint` reports advisory `react(set-state-in-effect)` warnings for the
-  standard fetch-on-mount pattern. They are warnings, not failures.
-
----
-
-## Phase 1 acceptance checklist
-
-- [x] React + TypeScript + Vite project builds without type errors.
-- [x] Tailwind CSS configured with an institutional design system.
-- [x] React Router with protected and role-gated routes.
-- [x] Supabase client configured through environment variables.
-- [x] Login, session restore, sign-out, and blocked-access states.
-- [x] Responsive shell with collapsible sidebar and mobile drawer.
-- [x] Top navigation with account menu and keyboard command palette.
-- [x] Initial dashboard and module landing pages.
-- [x] Initial migration for profiles, audit logs, settings, helpers, and RLS.
-- [x] No fabricated statistics, no placeholder buttons, no public data access.
-- [ ] RLS verified against a live project (see section 6 — required before
-      production use).
-
-Phase 2 begins only after the Phase 1 checks pass.
+2. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in the hosting provider.
+3. Configure SPA rewrites to `index.html`.
+4. Bootstrap the first administrator and disable public sign-up.
+5. Run the complete security checklist with non-admin test accounts.
+6. Confirm Supabase backups and document the restore procedure.
+7. Only then begin encoding real student records and uploading scans.

@@ -353,7 +353,7 @@ export function LoginPage() {
           </div>
 
           <div className="mt-6 flex items-center justify-between text-[11px] text-slate-400">
-            <span>TRACE v0.1.0 · Phase 1</span>
+            <span>TRACE v1.0.0 · Archive system</span>
             <span>Secured by Supabase Auth</span>
           </div>
         </div>

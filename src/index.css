@@ -132,3 +132,24 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Print only the physical locator label, not the surrounding application. */
+@media print {
+  body.trace-printing-label * {
+    visibility: hidden !important;
+  }
+
+  body.trace-printing-label #trace-locator-label,
+  body.trace-printing-label #trace-locator-label * {
+    visibility: visible !important;
+  }
+
+  body.trace-printing-label #trace-locator-label {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 4in !important;
+    max-width: 4in !important;
+    border-width: 2px !important;
+  }
+}

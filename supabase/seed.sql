@@ -10,17 +10,15 @@
 
 begin;
 
--- The schema version is safe to update on re-run.
+-- The schema version is seeded once. Each migration advances it, and re-running
+-- the seed must not roll a fully migrated database back to Phase 1.
 insert into public.system_settings (key, value, description)
 values (
   'schema_version',
   '{"version": "0.1.0", "phase": 1}'::jsonb,
   'TRACE database foundation version reported to the dashboard.'
 )
-on conflict (key) do update
-set value = excluded.value,
-    description = excluded.description,
-    updated_at = now();
+on conflict (key) do nothing;
 
 -- Descriptive defaults are inserted once and never overwritten by the seed,
 -- so an administrator can safely edit them later.

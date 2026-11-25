@@ -98,7 +98,7 @@ export function SettingsPage() {
       label: 'Foundation migration',
       detail: schemaVersion
         ? `system_settings reports schema ${schemaVersion}.`
-        : 'Apply the Phase 1 migration to create profiles, audit logs, and settings.',
+        : 'Apply every migration in timestamp order to create the archive schema.',
       ready: Boolean(schemaVersion),
     },
     {
@@ -122,12 +122,13 @@ export function SettingsPage() {
     {
       label: 'RLS verification',
       detail:
-        'Policies are defined in the migration. Verify them with a non-admin test account before deployment.',
+        'Policies for students, academic history, documents, locations, and requests are defined in the migrations. Verify them with a non-admin test account before deployment.',
       ready: false,
     },
     {
       label: 'Private document storage',
-      detail: 'Bucket and signed-URL policies arrive with Phase 7.',
+      detail:
+        'The Phase 7 migration creates the private student-documents bucket with signed-URL access. Confirm the bucket exists in the live project.',
       ready: false,
     },
   ]
@@ -151,9 +152,9 @@ export function SettingsPage() {
       />
 
       <Alert variant="info" title="Configuration visibility only">
-        Phase 1 exposes the real environment and schema state. Editable school
-        identity and archive defaults are introduced with the settings module
-        after their validation and audit requirements are implemented.
+        This page reports the real environment and schema state. School identity
+        and archive defaults remain seed-managed until an audited settings editor
+        is added.
       </Alert>
 
       {error ? (
@@ -224,7 +225,7 @@ export function SettingsPage() {
                   Scans will use private storage and short-lived signed URLs.
                 </p>
               </div>
-              <Badge variant="warning">Phase 7</Badge>
+              <Badge variant="warning">Private</Badge>
             </div>
           </CardContent>
         </Card>
@@ -346,8 +347,9 @@ export function SettingsPage() {
                   className="mt-0.5 size-4 shrink-0 text-emerald-600"
                   aria-hidden="true"
                 />
-                Row-level security is enabled on profiles, audit logs, and
-                system settings in the Phase 1 migration.
+                Row-level security is enabled on every archive table, including
+                students, academic history, documents, locations, requests, and
+                the audit log.
               </li>
               <li className="flex gap-2.5">
                 <ShieldCheck
@@ -379,7 +381,7 @@ export function SettingsPage() {
                 Migration
               </p>
               <code className="mt-1.5 block break-all font-mono text-[11px] text-slate-600">
-                supabase/migrations/20261124090000_phase1_foundation.sql
+                supabase/migrations/ · apply in timestamp order
               </code>
             </div>
           </CardContent>

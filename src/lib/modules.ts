@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import type { AppRole } from '@/lib/supabase/database.types'
 
-export type ModuleState = 'planned' | 'foundation'
+export type ModuleState = 'active'
 
 export interface ArchiveModule {
   id: string
@@ -31,8 +31,8 @@ export interface ArchiveModule {
 
 /**
  * Single source of truth for module status shown across the shell, the
- * dashboard roadmap, and the module landing pages. Nothing here represents
- * stored data — it is application build state.
+ * command palette, and any module guide. Nothing here represents stored
+ * data — it is application build state.
  */
 export const ARCHIVE_MODULES: ArchiveModule[] = [
   {
@@ -42,7 +42,7 @@ export const ARCHIVE_MODULES: ArchiveModule[] = [
     shortName: 'Students',
     path: '/students',
     phase: 3,
-    state: 'planned',
+    state: 'active',
     summary: 'The masterlist of historical student records.',
     purpose:
       'Create and maintain archival student profiles with incomplete historical details, duplicate detection, CSV import, and archive/restore controls.',
@@ -54,8 +54,10 @@ export const ARCHIVE_MODULES: ArchiveModule[] = [
       'Archive and restore instead of permanent deletion',
     ],
     availableNow: [
-      'Application shell, routing, and protected navigation',
-      'Staff authentication and role-aware access',
+      'Live student masterlist with filters and pagination',
+      'Create, edit, archive, and restore with audit events',
+      'CSV import with row validation and preview',
+      'Full record view with academic history and documents',
     ],
     icon: Archive,
   },
@@ -66,7 +68,7 @@ export const ARCHIVE_MODULES: ArchiveModule[] = [
     shortName: 'Search',
     path: '/search',
     phase: 6,
-    state: 'planned',
+    state: 'active',
     summary: 'Find records from partial or imperfect details.',
     purpose:
       'Rank results using PostgreSQL full-text and trigram similarity so staff can locate a record from a misspelled name, an approximate school year, a subject, or a physical locator.',
@@ -78,8 +80,10 @@ export const ARCHIVE_MODULES: ArchiveModule[] = [
       'Access-aware result fields and document availability',
     ],
     availableNow: [
-      'pg_trgm and unaccent extensions prepared in the database',
-      'Navigation shortcut and keyboard command palette',
+      'Ranked search across names, archive IDs, guardians, and locators',
+      'Structured filters for school year, school, year level, and subject',
+      'Document counts and locator codes in every result',
+      'Active-staff-only access enforced by the database',
     ],
     icon: FileSearch,
   },
@@ -90,7 +94,7 @@ export const ARCHIVE_MODULES: ArchiveModule[] = [
     shortName: 'Documents',
     path: '/documents',
     phase: 7,
-    state: 'planned',
+    state: 'active',
     summary: 'Private scans tied to the right student record.',
     purpose:
       'Upload and verify PDF, JPG, and PNG scans in a private bucket, then preview or download them only through short-lived signed URLs issued to authorized staff.',
@@ -102,8 +106,10 @@ export const ARCHIVE_MODULES: ArchiveModule[] = [
       'Short-expiry signed downloads restricted by role',
     ],
     availableNow: [
-      'Document module route reserved behind authentication',
-      'Audit foundation ready for upload and access events',
+      'Upload PDF, JPEG, and PNG scans up to 25 MB',
+      'Private signed links with an access audit event',
+      'Verification and rejection restricted to Registrar and Administrator',
+      'Document register with filters and per-student views',
     ],
     icon: FileText,
   },
@@ -114,10 +120,10 @@ export const ARCHIVE_MODULES: ArchiveModule[] = [
     shortName: 'Inventory',
     path: '/inventory',
     phase: 8,
-    state: 'planned',
+    state: 'active',
     summary: 'Know exactly where every original is stored.',
     purpose:
-      'Model storage rooms, cabinets, shelves, boxes, and folders, then generate consistent locator codes, printable labels, and authenticated QR codes for physical retrieval.',
+      'Model storage rooms, cabinets, shelves, boxes, and folders, then generate consistent locator codes, printable labels, and QR codes for physical retrieval.',
     capabilities: [
       'Structured storage hierarchy and locator codes',
       'Assign students to boxes and folders',
@@ -126,8 +132,10 @@ export const ARCHIVE_MODULES: ArchiveModule[] = [
       'Gap reports for missing locators and scans',
     ],
     availableNow: [
-      'Inventory module route and planned navigation entry',
-      'Role model that separates locator assignment permission',
+      'Unique locator codes with room, cabinet, shelf, box, and folder',
+      'Student assignment through a server-checked function',
+      'Printable labels with a QR code',
+      'Live student and document counts per location',
     ],
     icon: MapPin,
   },
@@ -138,7 +146,7 @@ export const ARCHIVE_MODULES: ArchiveModule[] = [
     shortName: 'Requests',
     path: '/requests',
     phase: 9,
-    state: 'planned',
+    state: 'active',
     summary: 'Track every request from intake to release.',
     purpose:
       'Record who requested a record, verify their authority, follow the retrieval workflow, and log the final release decision made by the Registrar.',
@@ -150,8 +158,10 @@ export const ARCHIVE_MODULES: ArchiveModule[] = [
       'Per-request event history and audit trail',
     ],
     availableNow: [
-      'Requests route reserved behind authentication',
-      'Audit event function available for workflow events',
+      'Request intake with student and staff assignment',
+      'Workflow RPCs for status, verification, and release',
+      'Release blocked until the requester is verified',
+      'Append-only per-request event history',
     ],
     icon: ClipboardList,
   },
@@ -162,7 +172,7 @@ export const ARCHIVE_MODULES: ArchiveModule[] = [
     shortName: 'Reports',
     path: '/reports',
     phase: 10,
-    state: 'planned',
+    state: 'active',
     summary: 'Operational reporting from real archive data.',
     purpose:
       'Produce digitization, locator coverage, inventory, and retrieval reports from live database records, with CSV export limited to authorized staff.',
@@ -174,8 +184,10 @@ export const ARCHIVE_MODULES: ArchiveModule[] = [
       'Authorized CSV export with no fabricated figures',
     ],
     availableNow: [
-      'Reports route reserved behind authentication',
-      'Database foundation for aggregate queries',
+      'Live coverage, verification, and retrieval aggregates',
+      'Gap report for missing locators, scans, and verifications',
+      'CSV export of students and retrieval requests',
+      'Figures recalculated from the database on each visit',
     ],
     icon: BarChart3,
   },
@@ -186,7 +198,7 @@ export const ARCHIVE_MODULES: ArchiveModule[] = [
     shortName: 'Audit',
     path: '/admin/audit',
     phase: 11,
-    state: 'foundation',
+    state: 'active',
     summary: 'Accountability for sensitive archival actions.',
     purpose:
       'A tamper-resistant activity record covering sign-ins, record changes, document access, releases, and account administration. Entries are written through a controlled function and are not editable by staff.',
@@ -198,9 +210,10 @@ export const ARCHIVE_MODULES: ArchiveModule[] = [
       'Minimal metadata — no unnecessary sensitive content',
     ],
     availableNow: [
-      'audit_logs table protected by row-level security',
-      'Administrator-only read access with real events',
-      'Security-definer writer with actor derived from the session',
+      'Append-only audit log with administrator-only reads',
+      'Triggers for students, academic history, documents, locations, and requests',
+      'Security-definer writer with the actor derived from the session',
+      'Entity lookup index for record-level accountability',
     ],
     icon: ScrollText,
     roles: ['administrator'],
@@ -212,21 +225,22 @@ export const ARCHIVE_MODULES: ArchiveModule[] = [
     shortName: 'Staff',
     path: '/admin/users',
     phase: 2,
-    state: 'foundation',
+    state: 'active',
     summary: 'Role-based access for Registrar personnel.',
     purpose:
       'Provision staff accounts, assign Administrator, Registrar, or Digitization Staff roles, and deactivate access without deleting archival history.',
     capabilities: [
-      'Provision accounts from Supabase Authentication',
+      'Create staff accounts with a temporary password',
       'Role assignment with least-privilege defaults',
       'Activate or suspend staff access',
-      'Role enforcement through database policies',
-      'Administrator-only account management',
+      'Self-change and last-administrator protections',
+      'Audited role and status changes',
     ],
     availableNow: [
       'Staff directory with live profile and role data',
-      'Role and active-status badges from the database',
-      'Server-enforced RLS for profile reads',
+      'Create, activate, suspend, and re-role accounts',
+      'Administrator-only access enforced by RLS',
+      'Audit trail for every account change',
     ],
     icon: Users,
     roles: ['administrator'],

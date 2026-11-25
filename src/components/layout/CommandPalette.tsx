@@ -58,7 +58,11 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             icon: item.icon,
             keywords: item.keywords ?? [],
             to: item.to,
-            meta: module ? `Phase ${module.phase}` : 'Module',
+            meta: module
+              ? module.state === 'active'
+                ? 'Active'
+                : `Phase ${module.phase}`
+              : 'Module',
           }
         }),
     )

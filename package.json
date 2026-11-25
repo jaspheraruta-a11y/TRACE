@@ -1,7 +1,7 @@
 {
   "name": "trace-archive",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "TRACE — Transcript and Record Archival and Cataloguing Engine for the Junior High School Registrar's Office.",
   "type": "module",
   "scripts": {
